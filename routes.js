@@ -9,6 +9,54 @@ var User = require("./models").User;
 var Course = require("./models").Course;
 
 
+router.param("id", function(req, res, next, id){
+    Course.findById(id, function(err, doc){
+        if (err) return next(err);
+        if (!doc) {
+            err = new Error("Not Found");
+            err.status = 404;
+            return next(err);
+        }
+        req.Course = doc;
+        return next();
+    })
+    .populate('user');
+});
+
+
+// Authenticate User Middleware
+
+// This array is used to keep track of user records
+// as they are created.
+const users = []; // Do I need this for this project?
+
+const authenticateUser = (req, res, next) => {
+    const credentials = auth(req);
+    if (credentials) {
+      User.findOne({ emailAddress: credentials.name }, function(err, user) {
+        if (user) {
+          const authenticated = bcrypt.compareSync(credentials.pass, user.password);
+        if (authenticated) {
+            console.log(`Authentication successful for username: ${user.username}!`);
+            // Store the user on the Request object.
+            req.currentUser = user;
+            next();
+          } else {
+            err = new Error("Authentication failure. Username and/or password not valid.");
+            err.status = 401;
+            next(err);
+          }
+        } else {
+          err = new Error("Authentication failure. Username and/or password not valid.");
+          err.status = 401;
+          next(err);
+        }
+      })
+    } else {
+      res.status(401).json({ "Authentication Error": "User email address and password are required" });
+    }
+};
+
 // GET Users route
 router.get("/users", function(req, res, next){
     // Returns the currently authenticated user
