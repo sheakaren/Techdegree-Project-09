@@ -1,7 +1,6 @@
 'use strict';
 
 var express = require("express");
-var router = express.Router();
 const bcryptjs = require('bcryptjs');
 const auth = require('basic-auth');
 
@@ -23,6 +22,8 @@ router.param("id", function(req, res, next, id){
     .populate('user');
 });
 
+
+// USERS
 
 // Authenticate User Middleware
 
@@ -53,12 +54,15 @@ const authenticateUser = (req, res, next) => {
         }
       })
     } else {
-      res.status(401).json({ "Authentication Error": "User email address and password are required" });
+      res.status(401).json({ "Email address and password are required" });
     }
 };
 
-// GET Users route
-router.get("/users", function(req, res, next){
+var router = express.Router();
+
+
+// GET Users route ---- GOOD
+router.get("/users", authenticateUser, function(req, res, next){
     // Returns the currently authenticated user
     User.find({})
         .exec(function(err, users){
@@ -67,8 +71,8 @@ router.get("/users", function(req, res, next){
         });
 });
 
-// POST Users route
-router.post("/users", function(req, res, next){
+// POST Users route ---- GOOD??
+router.post("/users", authenticateUser, function(req, res, next){
     //  Creates a user, sets the Location header to "/", and returns no content
     var user = new User({
         firstName: req.body.firstName,
@@ -78,13 +82,16 @@ router.post("/users", function(req, res, next){
     });
     user.save(function(err, user){
         if (err) return next(err);
+        res.location('/');
         res.status(201);
         res.json(user);
     });
 });
 
-// GET Courses route
-router.get("/courses", function(req, res, next){
+// COURSES
+
+// GET Courses route ---- GOOD
+router.get("/courses", authenticateUser, function(req, res, next){
     // Returns a list of courses (including the user that owns each course)
     Course.find({})
         .populate('user')
@@ -94,14 +101,14 @@ router.get("/courses", function(req, res, next){
         });
 });
 
-// GET Courses ID route
-router.get("/courses/:id", function(req, res, next){
+// GET Courses ID route ---- GOOD
+router.get("/courses/:id", authenticateUser, function(req, res, next){
     // Returns a the course (including the user that owns the course) for the provided course ID
     res.json(req.Course)
 });
 
-//  POST Courses route
-router.post("/courses", function(req, res, next){
+//  POST Courses route ---- GOOD
+router.post("/courses", authenticateUser, function(req, res, next){
     // Creates a course, sets the Location header to the URI for the course, and returns no content
     var course = new Course({
         user: req.body.user,
@@ -112,13 +119,14 @@ router.post("/courses", function(req, res, next){
     });
     course.save(function(err, course){
         if (err) return next(err);
+        res.location("/" + course.id)
         res.status(201);
         res.json(user);
     });
 });
 
-// PUT Courses ID route
-router.put("/courses/:id", function(req, res, next){
+// PUT Courses ID route ---- GOOD?
+router.put("/courses/:id", authenticateUser, function(req, res, next){
     // Updates a course and returns no content
     req.course.update(req.body, function(err){
         if (err) return next(err);
@@ -127,7 +135,7 @@ router.put("/courses/:id", function(req, res, next){
 });
 
 // DELETE Courses ID route
-router.delete("/courses/:id", function(req, res, next){
+router.delete("/courses/:id", authenticateUser, function(req, res, next){
     // Deletes a course and returns no content
     req.course.remove(function(err){
         req.course.save(function(err, course){
