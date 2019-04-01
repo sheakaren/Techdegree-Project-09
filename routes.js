@@ -29,7 +29,7 @@ router.param("id", function(req, res, next, id){
 
 // This array is used to keep track of user records
 // as they are created.
-const users = []; // Do I need this for this project?
+// const users = []; // Do I need this for this project? - I don't think so. Keeping it for now
 
 const authenticateUser = (req, res, next) => {
     const credentials = auth(req);
