@@ -81,7 +81,7 @@ router.post("/users", authenticateUser, function(req, res, next){
         password: bcryptjs.hashSync(req.body.password)
     });
     user.save(function(err, user){
-        if (err) return next(err);
+        if (err) return res.status(400).json({error: err});
         res.location('/');
         res.status(201);
         res.json(user);
@@ -96,7 +96,7 @@ router.get("/courses", authenticateUser, function(req, res, next){
     Course.find({})
         .populate('user')
         .exec(function(err,courses){
-            if(err) return next(err);
+            if(err) res.status(400).json({error: err});
             res.json(courses);
         });
 });
@@ -129,7 +129,7 @@ router.post("/courses", authenticateUser, function(req, res, next){
 router.put("/courses/:id", authenticateUser, function(req, res, next){
     // Updates a course and returns no content
     req.course.update(req.body, function(err){
-        if (err) return next(err);
+        if (err) return res.status(400).json({error: err});
         res.status(204);
     });
 });
@@ -139,7 +139,7 @@ router.delete("/courses/:id", authenticateUser, function(req, res, next){
     // Deletes a course and returns no content
     req.course.remove(function(err){
         req.course.save(function(err, course){
-            if (err) return next(err);
+            if (err) return res.status(400).json({error: err});
             res.status(204);
         });
     });
