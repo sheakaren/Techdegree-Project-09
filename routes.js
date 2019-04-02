@@ -1,27 +1,25 @@
+// 
+// 
+// 
+// 
+// currently only the following routes are working:
+            // GET Courses 
+            // GET Users (no auth) 
+            // GET Users (with auth) 
+// 
+// 
+// 
+// 
+
 'use strict';
 
 var express = require("express");
-const bcryptjs = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 const auth = require('basic-auth');
 
-var User = require("./models").User;
-var Course = require("./models").Course;
+var {User, Course} = require("./models");
 
-
-router.param("id", function(req, res, next, id){
-    Course.findById(id, function(err, doc){
-        if (err) return next(err);
-        if (!doc) {
-            err = new Error("Not Found");
-            err.status = 404;
-            return next(err);
-        }
-        req.Course = doc;
-        return next();
-    })
-    .populate('user');
-});
-
+var router = express.Router();
 
 // USERS
 
@@ -54,60 +52,105 @@ const authenticateUser = (req, res, next) => {
         }
       })
     } else {
-      res.status(401).json({ "Email address and password are required" });
+      res.status(401).json({ message: "Email address and password are required" });
     }
 };
 
-var router = express.Router();
+router.param("id", function(req, res, next, id){
+    Course.findById(id, function(err, doc){
+        if (err) return next(err);
+        if (!doc) {
+            err = new Error("Not Found");
+            err.status = 404;
+            return next(err);
+        }
+        req.Course = doc;
+        return next();
+    })
+    .populate('user');
+});
+
 
 
 // GET Users route ---- GOOD
-router.get("/users", authenticateUser, function(req, res, next){
+router.get("/api/users", authenticateUser, function(req, res, next){
     // Returns the currently authenticated user
-    User.find({})
+    const users = req.currentUser;
+    User.find()
         .exec(function(err, users){
             if(err) return next(err);
-            res.json(users);
+            return res.json(users);
         });
 });
 
-// POST Users route ---- GOOD??
+// POST Users route ---- 
 router.post("/users", authenticateUser, function(req, res, next){
     //  Creates a user, sets the Location header to "/", and returns no content
-    var user = new User({
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        emailAddress: req.body.emailAddress,
-        password: bcryptjs.hashSync(req.body.password)
-    });
-    user.save(function(err, user){
-        if (err) return res.status(400).json({error: err});
-        res.location('/');
-        res.status(201);
-        res.json(user);
-    });
+
+// Tried it this way, not working.
+
+    // const user = new User(
+    //     {
+    //     firstName: req.body.firstName,
+    //     lastName: req.body.lastName,
+    //     emailAddress: req.body.emailAddress,
+    //     password: bcryptjs.hashSync(req.body.password)
+    //     }
+    // );
+    // user.save(function(err, user){
+    //     if (err) return res.status(400).json({error: err.message});
+    //     res.location('/');
+    //     res.status(201);
+    //     return res.status(400).json({ errors: errorMessages });
+    // });
+    // Get the user from the request body.
+
+// This way isn't working, either...
+
+  const user = new User(req.body);
+
+  if(user.password){
+  // Hash the new user's password.
+  user.password = bcryptjs.hashSync(user.password);
+}
+  // Add the user to the `users` array.
+  user.save(user, function(err){
+    if (err) return res.status(400).json({error: err.message});
+  });
+  res.location('/');
+
+  // Set the status to 201 Created and end the response.
+  return res.status(201).end();
 });
+
+
 
 // COURSES
 
-// GET Courses route ---- GOOD
-router.get("/courses", authenticateUser, function(req, res, next){
+// GET Courses route ---- 
+router.get("/api/courses", function(req, res, next){
     // Returns a list of courses (including the user that owns each course)
-    Course.find({})
+    Course.find()
         .populate('user')
-        .exec(function(err,courses){
-            if(err) res.status(400).json({error: err});
-            res.json(courses);
-        });
+        .exec()
+        .then((courses) => {
+            //if(err) res.status(400).json({error: err});
+            res.status(200)
+            return res.send(courses);
+        }
+
+        );
+
+    //return res.send({"Notification": "Does this even work?"})
 });
 
-// GET Courses ID route ---- GOOD
+// GET Courses ID route ---- 
 router.get("/courses/:id", authenticateUser, function(req, res, next){
     // Returns a the course (including the user that owns the course) for the provided course ID
     res.json(req.Course)
 });
 
-//  POST Courses route ---- GOOD
+//  POST Courses route ---- 
 router.post("/courses", authenticateUser, function(req, res, next){
     // Creates a course, sets the Location header to the URI for the course, and returns no content
     var course = new Course({
@@ -121,16 +164,16 @@ router.post("/courses", authenticateUser, function(req, res, next){
         if (err) return next(err);
         res.location("/" + course.id)
         res.status(201);
-        res.json(user);
+        return res.json(user);
     });
 });
 
-// PUT Courses ID route ---- GOOD?
+// PUT Courses ID route ---- 
 router.put("/courses/:id", authenticateUser, function(req, res, next){
     // Updates a course and returns no content
     req.course.update(req.body, function(err){
         if (err) return res.status(400).json({error: err});
-        res.status(204);
+        return res.status(204);
     });
 });
 
@@ -140,7 +183,7 @@ router.delete("/courses/:id", authenticateUser, function(req, res, next){
     req.course.remove(function(err){
         req.course.save(function(err, course){
             if (err) return res.status(400).json({error: err});
-            res.status(204);
+            return res.status(204);
         });
     });
 });
