@@ -6,12 +6,17 @@ const morgan = require('morgan');
 
 const routes = require('./routes.js');
 const mongoose = require("mongoose");
+const bodyParser = require('body-parser');
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
 
 // create the Express app
 const app = express();
+
+// Body Parser
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
