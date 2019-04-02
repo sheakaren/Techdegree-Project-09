@@ -96,11 +96,10 @@ router.post("/api/users", function(req, res, next){
     // Add the user to the `users` array.
     user.save(user, function(err){
     if (err) return res.status(400).json({error: err.message});
-    });
     res.location('/');
-
     // Set the status to 201 Created and end the response.
-    return res.status(201).end();
+    return res.status(201).json('User Successfully Created');
+    });
 });
 
 
