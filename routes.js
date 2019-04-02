@@ -131,24 +131,7 @@ router.get("/api/courses/:id", function(req, res, next){
     res.json(req.Course)
 });
 
-//  POST Courses route ---- 
-
-// // //
-// Sucessfully creates a course in the database,
-// BUT crashes the server every time a new course is created
-// Postman shows "Could not get any response" when I send the request 
-// Server crashes and logs the following in the console:
-
-        // events.js:173
-//       throw er; // Unhandled 'error' event
-//       ^
-
-// ReferenceError: user is not defined
-
-// When the server is restarted, the newly created course is under the course list
-// Note: I do not change any code between terminating and restarting the server
-// // //
-
+//  POST Courses route ---- GOOD
 router.post("/api/courses", authenticateUser, function(req, res, next){
     // Creates a course, sets the Location header to the URI for the course, and returns no content
     var course = new Course({
@@ -158,11 +141,11 @@ router.post("/api/courses", authenticateUser, function(req, res, next){
         estimatedTime: req.body.estimatedTime,
         materialsNeeded: req.body.materialsNeeded
     });
-    course.save(function(err, course){
+    course.save(function(err){
         if (err) return next(err);
         res.location("/" + course.id)
         res.status(201);
-        return res.json(user);
+        return res.json(course);
     });
 });
 
