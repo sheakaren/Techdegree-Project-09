@@ -8,11 +8,12 @@ var UserSchema = new Schema({
     firstName: {type: String,
                 required: [true, 'First name is required']},
     lastName: {type: String,
-                required: [true, 'Lase name is required']},
+               required: [true, 'Last name is required']},
     emailAddress: {type: String,
-                required: [true, 'Email address is required']},
+                   required: [true, 'Email address is required'],
+                   unique: [true, 'Unique email address is required']},
     password: {type: String,
-                required: [true, 'Password is required']}
+               required: [true, 'Password is required']}
 });
 
 var User = mongoose.model('User', UserSchema);
