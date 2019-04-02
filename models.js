@@ -5,7 +5,6 @@ var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
-    _id: ObjectId,
     firstName: String,
     lastName: String,
     emailAddress: String,
@@ -15,7 +14,6 @@ var UserSchema = new Schema({
 var User = mongoose.model('User', UserSchema);
 
 var CourseSchema = new Schema({
-    _id: ObjectId,
     user: {type: mongoose.Schema.Types.ObjectId, ref:"User"},
     title: String,
     description: String,
