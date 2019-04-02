@@ -23,10 +23,8 @@ var CourseSchema = new Schema({
                 required: [true, 'Course title is required']},
     description: {type: String,
                 required: [true, 'Course description is required']},
-    estimatedTime: {type: String,
-                required: [true, 'Estimated time is required']},
-    materialsNeeded: {type: String,
-                required: [true, 'materials needed is required']}
+    estimatedTime: String,
+    materialsNeeded: String
 });
 
 var Course = mongoose.model('Course', CourseSchema);
