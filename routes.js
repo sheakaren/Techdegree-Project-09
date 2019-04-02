@@ -36,7 +36,7 @@ const authenticateUser = (req, res, next) => {
         if (user) {
           const authenticated = bcrypt.compareSync(credentials.pass, user.password);
         if (authenticated) {
-            console.log(`Authentication successful for username: ${user.username}!`);
+            console.log(`Authentication successful for user: ${user.firstName} ${user.lastName}!`);
             // Store the user on the Request object.
             req.currentUser = user;
             next();
@@ -83,44 +83,26 @@ router.get("/api/users", authenticateUser, function(req, res, next){
         });
 });
 
-// POST Users route ---- 
-router.post("/users", authenticateUser, function(req, res, next){
+// POST Users route ---- GOOD
+router.post("/api/users", function(req, res, next){
     //  Creates a user, sets the Location header to "/", and returns no content
 
-// Tried it this way, not working.
-
-    // const user = new User(
-    //     {
-    //     firstName: req.body.firstName,
-    //     lastName: req.body.lastName,
-    //     emailAddress: req.body.emailAddress,
-    //     password: bcryptjs.hashSync(req.body.password)
-    //     }
-    // );
-    // user.save(function(err, user){
-    //     if (err) return res.status(400).json({error: err.message});
-    //     res.location('/');
-    //     res.status(201);
-    //     return res.status(400).json({ errors: errorMessages });
-    // });
-    // Get the user from the request body.
-
-// This way isn't working, either...
-
-  const user = new User(req.body);
-
-  if(user.password){
-  // Hash the new user's password.
-  user.password = bcryptjs.hashSync(user.password);
-}
-  // Add the user to the `users` array.
-  user.save(user, function(err){
+    const user = new User(
+        {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        emailAddress: req.body.emailAddress,
+        password: bcrypt.hashSync(req.body.password)
+        }
+    );
+    // Add the user to the `users` array.
+    user.save(user, function(err){
     if (err) return res.status(400).json({error: err.message});
-  });
-  res.location('/');
+    });
+    res.location('/');
 
-  // Set the status to 201 Created and end the response.
-  return res.status(201).end();
+    // Set the status to 201 Created and end the response.
+    return res.status(201).end();
 });
 
 
