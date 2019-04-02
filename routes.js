@@ -21,14 +21,10 @@ var {User, Course} = require("./models");
 
 var router = express.Router();
 
-// USERS
 
 // Authenticate User Middleware
 
-// This array is used to keep track of user records
-// as they are created.
-// const users = []; // Do I need this for this project? - I don't think so. Keeping it for now
-
+// This array is used to keep track of user records as they are created. ---- GOOD
 const authenticateUser = (req, res, next) => {
     const credentials = auth(req);
     if (credentials) {
@@ -70,7 +66,9 @@ router.param("id", function(req, res, next, id){
     .populate('user');
 });
 
-
+// // // // 
+// USERS //
+// // // // 
 
 // GET Users route ---- GOOD
 router.get("/api/users", authenticateUser, function(req, res, next){
@@ -106,10 +104,11 @@ router.post("/api/users", function(req, res, next){
 });
 
 
+// // // // //
+// COURSES  //
+// // // // //
 
-// COURSES
-
-// GET Courses route ---- 
+// GET Courses route ---- GOOD
 router.get("/api/courses", function(req, res, next){
     // Returns a list of courses (including the user that owns each course)
     Course.find()
@@ -126,14 +125,31 @@ router.get("/api/courses", function(req, res, next){
     //return res.send({"Notification": "Does this even work?"})
 });
 
-// GET Courses ID route ---- 
-router.get("/courses/:id", authenticateUser, function(req, res, next){
+// GET Courses ID route ---- GOOD
+router.get("/api/courses/:id", function(req, res, next){
     // Returns a the course (including the user that owns the course) for the provided course ID
     res.json(req.Course)
 });
 
 //  POST Courses route ---- 
-router.post("/courses", authenticateUser, function(req, res, next){
+
+// // //
+// Sucessfully creates a course in the database,
+// BUT crashes the server every time a new course is created
+// Postman shows "Could not get any response" when I send the request 
+// Server crashes and logs the following in the console:
+
+        // events.js:173
+//       throw er; // Unhandled 'error' event
+//       ^
+
+// ReferenceError: user is not defined
+
+// When the server is restarted, the newly created course is under the course list
+// Note: I do not change any code between terminating and restarting the server
+// // //
+
+router.post("/api/courses", authenticateUser, function(req, res, next){
     // Creates a course, sets the Location header to the URI for the course, and returns no content
     var course = new Course({
         user: req.body.user,
@@ -151,7 +167,7 @@ router.post("/courses", authenticateUser, function(req, res, next){
 });
 
 // PUT Courses ID route ---- 
-router.put("/courses/:id", authenticateUser, function(req, res, next){
+router.put("/api/courses/:id", authenticateUser, function(req, res, next){
     // Updates a course and returns no content
     req.course.update(req.body, function(err){
         if (err) return res.status(400).json({error: err});
@@ -159,8 +175,8 @@ router.put("/courses/:id", authenticateUser, function(req, res, next){
     });
 });
 
-// DELETE Courses ID route
-router.delete("/courses/:id", authenticateUser, function(req, res, next){
+// DELETE Courses ID route ---- 
+router.delete("/api/courses/:id", authenticateUser, function(req, res, next){
     // Deletes a course and returns no content
     req.course.remove(function(err){
         req.course.save(function(err, course){
