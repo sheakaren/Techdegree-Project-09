@@ -1,15 +1,3 @@
-// 
-// 
-// 
-// 
-// currently only the following routes are working:
-            // GET Courses 
-            // GET Users (no auth) 
-            // GET Users (with auth) 
-// 
-// 
-// 
-// 
 
 'use strict';
 
@@ -22,7 +10,9 @@ var {User, Course} = require("./models");
 var router = express.Router();
 
 
-// Authenticate User Middleware
+// // // // // // // // // // // // 
+// User Authentication Middleware //
+// // // // // // // // // // // // 
 
 // This array is used to keep track of user records as they are created. ---- GOOD
 const authenticateUser = (req, res, next) => {
@@ -117,11 +107,7 @@ router.get("/api/courses", function(req, res, next){
             //if(err) res.status(400).json({error: err});
             res.status(200)
             return res.send(courses);
-        }
-
-        );
-
-    //return res.send({"Notification": "Does this even work?"})
+        });
 });
 
 // GET Courses ID route ---- GOOD
@@ -148,13 +134,17 @@ router.post("/api/courses", authenticateUser, function(req, res, next){
     });
 });
 
-// PUT Courses ID route ---- 
+// PUT Courses ID route ---- GOOD
 router.put("/api/courses/:id", authenticateUser, function(req, res, next){
     // Updates a course and returns no content
-    req.course.update(req.body, function(err){
-        if (err) return res.status(400).json({error: err});
-        return res.status(204);
-    });
+// Source: https://stackoverflow.com/questions/5024787/update-model-with-mongoose-express-nodejs
+  
+    Course.findByIdAndUpdate(req.params.id, req.body, {new: true}, function (err, course) {
+        if (err) return res.status(400).json({error: err.message});
+        res.location('/');
+        res.status(204)
+        return res.json('Course Updated Successfully!');
+      });
 });
 
 // DELETE Courses ID route ---- 
