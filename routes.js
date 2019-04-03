@@ -88,7 +88,7 @@ router.post("/api/users", function(req, res, next){
     if (err) return res.status(400).json({error: err.message});
     res.location('/');
     // Set the status to 201 Created and end the response.
-    return res.status(201).json('User Successfully Created');
+    return res.status(201).json('New user created successfully!');
     });
 });
 
@@ -105,7 +105,7 @@ router.get("/api/courses", function(req, res, next){
         .exec()
         .then((courses) => {
             //if(err) res.status(400).json({error: err});
-            res.status(200)
+            res.status(200);
             return res.send(courses);
         });
 });
@@ -113,7 +113,7 @@ router.get("/api/courses", function(req, res, next){
 // GET Courses ID route ---- GOOD
 router.get("/api/courses/:id", function(req, res, next){
     // Returns a the course (including the user that owns the course) for the provided course ID
-    res.json(req.Course)
+    res.json(req.Course);
 });
 
 //  POST Courses route ---- GOOD
@@ -128,7 +128,7 @@ router.post("/api/courses", authenticateUser, function(req, res, next){
     });
     course.save(function(err){
         if (err) return next(err);
-        res.location("/" + course.id)
+        res.location("/" + course.id);
         res.status(201);
         return res.json(course);
     });
@@ -137,24 +137,33 @@ router.post("/api/courses", authenticateUser, function(req, res, next){
 // PUT Courses ID route ---- GOOD
 router.put("/api/courses/:id", authenticateUser, function(req, res, next){
     // Updates a course and returns no content
-// Source: https://stackoverflow.com/questions/5024787/update-model-with-mongoose-express-nodejs
-  
+
+    // Source: https://stackoverflow.com/questions/5024787/update-model-with-mongoose-express-nodejs
     Course.findByIdAndUpdate(req.params.id, req.body, {new: true}, function (err, course) {
         if (err) return res.status(400).json({error: err.message});
         res.location('/');
-        res.status(204)
-        return res.json('Course Updated Successfully!');
-      });
+        res.status(204);
+        return res.json('Course updated successfully!');
+    });
 });
 
-// DELETE Courses ID route ---- 
+// DELETE Courses ID route ---- GOOD
 router.delete("/api/courses/:id", authenticateUser, function(req, res, next){
     // Deletes a course and returns no content
-    req.course.remove(function(err){
-        req.course.save(function(err, course){
-            if (err) return res.status(400).json({error: err});
-            return res.status(204);
-        });
+
+    // Credit goes to Johnny Louifils
+    Course.remove({_id: req.params.id})
+        .exec()
+        .then(result =>{
+            res.location('/');
+            res.status(204);  
+            return res.json('Course deleted successfully!')         
+        })
+        .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            error: err
+        });  
     });
 });
 
