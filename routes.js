@@ -64,11 +64,7 @@ router.param("id", function(req, res, next, id){
 router.get("/api/users", authenticateUser, function(req, res, next){
     // Returns the currently authenticated user
     const users = req.currentUser;
-    User.find()
-        .exec(function(err, users){
-            if(err) return next(err);
-            return res.json(users);
-        });
+    return res.json(users);
 });
 
 // POST Users route ---- GOOD
@@ -88,7 +84,7 @@ router.post("/api/users", function(req, res, next){
     if (err) return res.status(400).json({error: err.message});
     res.location('/');
     // Set the status to 201 Created and end the response.
-    return res.status(201).json('New user created successfully!');
+    res.status(201).end();
     });
 });
 
@@ -119,8 +115,9 @@ router.get("/api/courses/:id", function(req, res, next){
 //  POST Courses route ---- GOOD
 router.post("/api/courses", authenticateUser, function(req, res, next){
     // Creates a course, sets the Location header to the URI for the course, and returns no content
+    const user = req.currentUser;
     var course = new Course({
-        user: req.body.user,
+        user: user._id,
         title: req.body.title,
         description: req.body.description,
         estimatedTime: req.body.estimatedTime,
@@ -129,8 +126,7 @@ router.post("/api/courses", authenticateUser, function(req, res, next){
     course.save(function(err){
         if (err) return next(err);
         res.location("/" + course.id);
-        res.status(201);
-        return res.json(course);
+        res.status(201).end();
     });
 });
 
